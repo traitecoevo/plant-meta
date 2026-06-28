@@ -9,17 +9,17 @@ for the graph.
 
 ---
 
-## 1. `plant` interface change → migrate `plant.assembly`
+## 1. `plant` interface change → migrate `regnans`
 
-**The `plant` ↔ `plant.assembly` interface is the live fault line.** The fitness/equilibrium machinery
-was moved out of `plant` into `plant.assembly`, which pins a compatible `plant` via
+**The `plant` ↔ `regnans` interface is the live fault line.** The fitness/equilibrium machinery
+was moved out of `plant` into `regnans`, which pins a compatible `plant` via
 `.plant-interface-version`. A change to `plant`'s SCM / control / fitness API is a **breaking change**
-for `plant.assembly`. Default to treating it as breaking.
+for `regnans`. Default to treating it as breaking.
 
 1. **plant** — make the change on `develop`; note the public-API delta (e.g. the
    `build_schedule` → `run_scm(refine_schedule=TRUE)` / `scm_base_control()` → `control()`
    consolidation).
-2. **plant.assembly** — migrate call sites; update `.plant-interface-version` with the new `plant`
+2. **regnans** — migrate call sites; update `.plant-interface-version` with the new `plant`
    ref and the `applied_breaking_changes` list. Run its test suite against the installed `plant`.
 3. Check **`logpile`** campaigns and **`overstorey`** notebook posts pinned to the affected `plant`
    version still build / reproduce.
@@ -61,7 +61,7 @@ for `plant.assembly`. Default to treating it as breaking.
 ## 5. Cutting a new `plant` release → update pins downstream
 
 1. **plant** — finalise on `master`, bump version + `NEWS.md`, tag the release.
-2. **plant.assembly** — bump `.plant-interface-version` to the released ref if it should track it.
+2. **regnans** — bump `.plant-interface-version` to the released ref if it should track it.
 3. **overstorey** — update the pinned `plant` version + version badges for released-line posts.
 4. **logpile** / **floracle** — update any pinned `traitecoevo/plant@…` refs.
 
@@ -71,8 +71,8 @@ for `plant.assembly`. Default to treating it as breaking.
 
 | You changed… | Must rebuild/check… |
 |--------------|----------------------|
-| `plant` SCM/control/fitness API | migrate `plant.assembly` (+ `.plant-interface-version`); `logpile`/`overstorey` pins (breaking) |
+| `plant` SCM/control/fitness API | migrate `regnans` (+ `.plant-interface-version`); `logpile`/`overstorey` pins (breaking) |
 | `odelia` solver/headers | recompile next-gen `plant` core (LinkingTo) |
 | `plant` simulation semantics | invalidate `logpile` caches for same inputs |
 | `phytofile` calibration | downstream `plant` runs / `floracle` forecasts consuming the parameters |
-| `plant` release/version | version pins/badges in `plant.assembly`, `overstorey`, `logpile`, `floracle` |
+| `plant` release/version | version pins/badges in `regnans`, `overstorey`, `logpile`, `floracle` |

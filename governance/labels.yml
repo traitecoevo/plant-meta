@@ -6,7 +6,7 @@
 # express. The board (#5) owns the linear workflow and metadata; labels own the orthogonal stuff.
 #
 # ORG CONSISTENCY: the work-type core (bug/task/epic) uses the same names + descriptions as the
-# AusTraits family (austraits-meta) and matches what plant/overstorey/plant.assembly already used.
+# AusTraits family (austraits-meta) and matches what plant/overstorey/regnans already used.
 # Colours are a conventional, distinct palette (bug=red, task=blue, epic=purple) — plant's previous
 # colours weren't intuitive (task & epic both blue); this converges both families onto one palette.
 #

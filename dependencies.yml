@@ -27,7 +27,7 @@ packages:
     source_of_truth_for:
       - the forest model engine (FF16 physiology, alternative physiologies)
       - the SCM solver and patch / metapopulation dynamics
-      - invasion-fitness primitives consumed by plant.assembly
+      - invasion-fitness primitives consumed by regnans
     default_branch: develop          # master = released 2.x line
     released_version: 2.0.0
     r_imports: [Rcpp, R6, loggr, crayon, nleqslv, BB]
@@ -59,8 +59,8 @@ packages:
       Spun out of plant's solver (orig. R. FitzJohn). The next-generation plant core links against it;
       released plant 2.x does not yet.
 
-  plant.assembly:
-    repo: traitecoevo/plant.assembly
+  regnans:
+    repo: traitecoevo/regnans
     kind: r-package
     role: Community assembly + trait evolution on top of plant
     source_of_truth_for:
@@ -74,7 +74,7 @@ packages:
     data_consumes:
       - engine: plant                # solves communities by repeatedly invoking plant
     produces:
-      - the plant.assembly R package (community_demography, selection gradients, attractors)
+      - the regnans R package (community_demography, selection gradients, attractors)
 
   logpile:
     repo: traitecoevo/logpile
@@ -167,12 +167,12 @@ cross_boundary_artifacts:
     consumer: plant (model runs)
     nature: generated (MCMC inference)
   - artifact: .plant-interface-version
-    producer: plant.assembly (pins plant)
-    consumer: plant.assembly build/tests
+    producer: regnans (pins plant)
+    consumer: regnans build/tests
     nature: authored (records the compatible plant ref + applied breaking-change migrations)
   - artifact: plant simulation runs
     producer: plant
-    consumer: logpile (cache), plant.assembly (assembly), floracle (forecasts)
+    consumer: logpile (cache), regnans (assembly), floracle (forecasts)
     nature: generated (deterministic given inputs; cached by SHA-256 hash)
   - artifact: header-only ODE solver
     producer: odelia

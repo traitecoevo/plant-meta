@@ -1,6 +1,6 @@
 # Filing & labelling issues — plant family
 
-A short contributor guide for issues across the plant family (`plant`, `odelia`, `plant.assembly`,
+A short contributor guide for issues across the plant family (`plant`, `odelia`, `regnans`,
 `logpile`, `phytofile`, `overstorey`, `standviz`, `floracle`). The family is tracked on one board,
 [#5](https://github.com/orgs/traitecoevo/projects/5); new issues are **auto-added** to it.
 
@@ -9,7 +9,7 @@ A short contributor guide for issues across the plant family (`plant`, `odelia`,
 File in the repo the issue is *about*. Unsure which? File in the most likely one — maintainers
 re-home it. For cross-package work, file in the primary repo and link the others. See
 [`../AGENTS.md`](../AGENTS.md) for who owns what (`plant` = the model engine, `odelia` = the ODE
-solver, `plant.assembly` = assembly/evolution, `phytofile` = calibration, `logpile` = the simulation
+solver, `regnans` = assembly/evolution, `phytofile` = calibration, `logpile` = the simulation
 cache).
 
 ## Title
@@ -30,7 +30,7 @@ Pick **one work-type**, plus context:
 
 Then add, as relevant:
 - **`cross-package`** — if the change has consequences beyond this repo (e.g. a `plant` interface
-  change that forces a `plant.assembly` migration). Add **`breaking`** too if dependents must change.
+  change that forces a `regnans` migration). Add **`breaking`** too if dependents must change.
   See [`release-playbooks.md`](release-playbooks.md).
 - **`blocked` / `needs-info`** — if it's waiting on a dependency or on more information.
 - **`question`** — if it's a question rather than a work item.

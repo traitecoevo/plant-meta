@@ -23,7 +23,7 @@ Add cross-package signals whenever work spans repos:
 - **`cross-package`** — has consequences beyond this repo: coordinated changes/rebuilds across
   packages (see `release-playbooks.md`).
 - **`breaking`** — a breaking change with downstream impact (often paired with `cross-package`; e.g. a
-  `plant` interface change that forces a `plant.assembly` migration).
+  `plant` interface change that forces a `regnans` migration).
 
 `question` is the one community label.
 
@@ -41,19 +41,19 @@ Add cross-package signals whenever work spans repos:
 
 - All work goes through a **feature branch + PR**; never commit to a repo's default branch.
 - Default branches vary across the family — confirm before branching:
-  `plant` → `develop`, `odelia` → `master`, `plant.assembly` → `master`, `logpile` → `main`,
+  `plant` → `develop`, `odelia` → `master`, `regnans` → `master`, `logpile` → `main`,
   `phytofile` → `master`, `overstorey` → `master`, `standviz` → `master`, `plant-meta` → `main`.
 - R packages: PRs must pass `R CMD check` / testthat (see each repo's `.github/workflows/`).
   `plant` and `odelia` compile C++ — a green check means it built, not just that R code parsed.
 - For cross-package changes, link the PRs to each other and to the tracking issue, and label
-  `cross-package` (+ `breaking` if dependents must change). The `plant` ↔ `plant.assembly` interface
+  `cross-package` (+ `breaking` if dependents must change). The `plant` ↔ `regnans` interface
   (`.plant-interface-version`) is the one to watch.
 
 ## Source-of-truth reminders (don't fight the architecture)
 
 - The forest model engine → **plant**. Don't fork the model downstream.
 - The ODE integrator + autodiff → **odelia**. Link against it; don't re-vendor.
-- Assembly / evolution machinery → **plant.assembly** (moved out of `plant` deliberately).
+- Assembly / evolution machinery → **regnans** (moved out of `plant` deliberately).
 - Calibrated parameters → **phytofile**. The simulation cache → **logpile**.
 - See [`../AGENTS.md`](../AGENTS.md) for the full rules and gotchas.
 
@@ -62,7 +62,7 @@ Add cross-package signals whenever work spans repos:
 ## Scope decisions
 
 **Decided 2026-06-28 — governance covers the model-core, docs, and viz repos plus `floracle`.** The
-label taxonomy applies to: model core (`plant`, `odelia`, `plant.assembly`, `logpile`, `phytofile`,
+label taxonomy applies to: model core (`plant`, `odelia`, `regnans`, `logpile`, `phytofile`,
 `plant-meta`), docs/viz (`overstorey`, `standviz`), and `floracle`. Each is listed explicitly in
 `apply-labels.sh`. Still family-scoped — never org-wide.
 

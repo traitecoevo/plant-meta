@@ -5,7 +5,7 @@ Documents the **structure and conventions** of the family board, not its live ca
 - **Board:** Plant model development — https://github.com/orgs/traitecoevo/projects/5
 - **Owner:** `traitecoevo` org
 - **Scope:** development across the plant modelling stack — the `plant` model and the packages that
-  build on it (`odelia`, `plant.assembly`, `logpile`, `phytofile`), its docs/viz (`overstorey`,
+  build on it (`odelia`, `regnans`, `logpile`, `phytofile`), its docs/viz (`overstorey`,
   `standviz`), and applications (`floracle`). The mulga project (`mulgafutures`) tracks its
   deliverables on its **own** board and is not managed here.
 

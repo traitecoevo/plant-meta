@@ -14,7 +14,7 @@
 # USAGE
 #   ./apply-labels.sh            # dry run: show every label x repo it would sync
 #   ./apply-labels.sh --apply    # actually create/update labels (run only after sign-off)
-#   ./apply-labels.sh --apply --only plant,plant.assembly   # restrict to a subset of the list
+#   ./apply-labels.sh --apply --only plant,regnans   # restrict to a subset of the list
 #
 # Requires: gh (authenticated to traitecoevo), python3 with pyyaml.
 
@@ -27,7 +27,7 @@ FAMILY_REPOS=(
   # model core
   traitecoevo/plant
   traitecoevo/odelia
-  traitecoevo/plant.assembly
+  traitecoevo/regnans
   traitecoevo/logpile
   traitecoevo/phytofile
   traitecoevo/plant-meta
@@ -101,7 +101,7 @@ echo
 # Applied per repo ONLY when the OLD label exists and the NEW one does not. After a rename, phase 2
 # (--force create) fixes colour/description. bug/epic/question keep their names (phase 2 restyles).
 # enhancement -> task (the GitHub default "New feature or request"; most are discrete work —
-# re-tag true epics by hand). The plant core (plant/overstorey/plant.assembly) already uses
+# re-tag true epics by hand). The plant core (plant/overstorey/regnans) already uses
 # bug/task/epic, so no rename fires there — phase 2 just recolours them to the shared palette.
 RENAME_MAP=(
   "enhancement=>task"

@@ -19,14 +19,14 @@ and the shared label/triage conventions.
 | [`governance/project-board.md`](governance/project-board.md) | Structure & conventions of family board [#5](https://github.com/orgs/traitecoevo/projects/5); labels-vs-board-fields division of labour. |
 | [`governance/auto-add-to-board.md`](governance/auto-add-to-board.md) | How new issues from all repos auto-add to board #5 (workflow + token secret). |
 | [`governance/issue-guide.md`](governance/issue-guide.md) | Contributor guide: how to file & label issues across the family (repos point here). |
-| [`governance/release-playbooks.md`](governance/release-playbooks.md) | Cross-repo change sequences (e.g. "plant interface change → migrate plant.assembly"). |
+| [`governance/release-playbooks.md`](governance/release-playbooks.md) | Cross-repo change sequences (e.g. "plant interface change → migrate regnans"). |
 | [`governance/triage.md`](governance/triage.md) | Contribution + triage discipline; open scope questions. |
 
 ## Scope
 
 The **plant family only** — a subset of the `traitecoevo` org. Nothing here applies org-wide or to
 other families (e.g. the AusTraits trait-data stack, which has its own `austraits-meta`). Model-core
-repos: `plant`, `odelia`, `plant.assembly`, `logpile`, `phytofile`, and this repo. See `AGENTS.md`
+repos: `plant`, `odelia`, `regnans`, `logpile`, `phytofile`, and this repo. See `AGENTS.md`
 for the full list.
 
 This convention is deliberately aligned with [`austraits-meta`](https://github.com/traitecoevo/austraits-meta)

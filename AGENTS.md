@@ -31,7 +31,7 @@ applies it to a research project.
 |------|------|------|
 | `plant` | R + C++ package | The core **individual-based, size- and trait-structured forest demography model** (FF16 physiology, the SCM solver, patch/metapopulation dynamics, invasion fitness). The hub. |
 | `odelia` | R + C++ (header-only) package | A standalone **ODE solver with automatic differentiation** (adaptive RK4-5), spun out of `plant`'s solver. The next-generation `plant` core links against it. |
-| `plant.assembly` | R package | **Community assembly + trait evolution** on top of `plant` (selection gradients, equilibria, stochastic/fitmax assembly). The fitness/equilibrium machinery was moved here out of `plant`. |
+| `regnans` | R package | **Community assembly + trait evolution** on top of `plant` (selection gradients, equilibria, stochastic/fitmax assembly). The fitness/equilibrium machinery was moved here out of `plant`. |
 | `logpile` | R package | A **content-addressed cache** for expensive, deterministic `plant` simulations — built for simulation-based calibration. |
 | `phytofile` | compendium (private) | **Bayesian/MCMC calibration** of `plant` parameters — infers suitable parameter distributions for the tree model. |
 | `plant-meta` | this repo | Cross-package knowledge + governance (labels, board, playbooks). |
@@ -73,7 +73,7 @@ odelia ─────────────(LinkingTo, next-gen plant core)�
                                                                      │
                                           ┌──────────Depends─────────┤
                                           ▼                          ▼
-                                   plant.assembly               logpile  (Imports / Remotes plant)
+                                   regnans               logpile  (Imports / Remotes plant)
 ```
 
 - **`plant`** is the hub. On the released `master` line it has **no intra-family R dependencies**
@@ -81,9 +81,9 @@ odelia ─────────────(LinkingTo, next-gen plant core)�
   (the next-generation `plant` `LinkingTo`/`Imports` it). Verify against the branch you're on.
 - **`odelia`** is the spun-out ODE solver (originally Rich FitzJohn's solver inside `plant`). It has
   **no intra-family dependencies** — it's a foundational library others link against.
-- **`plant.assembly`** **Depends** on `plant` and pins a compatible version via
-  [`.plant-interface-version`](https://github.com/traitecoevo/plant.assembly) (the
-  `plant`↔`plant.assembly` interface — fitness/equilibrium machinery — was recently split out of
+- **`regnans`** **Depends** on `plant` and pins a compatible version via
+  [`.plant-interface-version`](https://github.com/traitecoevo/regnans) (the
+  `plant`↔`regnans` interface — fitness/equilibrium machinery — was recently split out of
   `plant`). This is the most active cross-repo interface today.
 - **`logpile`** **Imports**/`Remotes` `plant` (`traitecoevo/plant@develop`) — it caches `plant` runs.
 - **`standviz`** and **`overstorey`** don't link `plant` as a build dependency; `overstorey` renders
@@ -98,7 +98,7 @@ odelia ─────────────(LinkingTo, next-gen plant core)�
                                     ▲                                                   │
                                     │                                                   │ simulations
    plant runs cached by logpile ◄──┘                                                    ▼
-                                                          plant.assembly · floracle · standviz · overstorey
+                                                          regnans · floracle · standviz · overstorey
                                                           (assembly/evolution · forecasts · viz · docs)
 ```
 
@@ -106,7 +106,7 @@ odelia ─────────────(LinkingTo, next-gen plant core)�
    `plant` model ("parameters for the tree model").
 2. **`logpile`** caches the expensive, deterministic `plant` simulations that calibration and
    assembly campaigns repeatedly need (content-addressed by input hash, fault-tolerant, resumable).
-3. **`plant`** (optionally via **`plant.assembly`**) produces ecological/evolutionary predictions.
+3. **`plant`** (optionally via **`regnans`**) produces ecological/evolutionary predictions.
 4. Those feed **`floracle`** (forecasting), **`standviz`** (3D visualisation), and are documented in
    **`overstorey`**.
 5. The **mulga project** (`mulgafutures` WP3) applies this stack to mulga, with `mulga_plots_data`
@@ -122,7 +122,7 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
 |---------|--------------------|---------------|
 | The forest model engine (physiology, SCM solver, patch/metapopulation dynamics) | **plant** | consume; don't fork the model |
 | The ODE integrator + autodiff core | **odelia** | link against it; don't re-vendor |
-| Community assembly / trait evolution machinery (fitness, equilibrium, selection gradients) | **plant.assembly** | call it; it was deliberately moved out of `plant` |
+| Community assembly / trait evolution machinery (fitness, equilibrium, selection gradients) | **regnans** | call it; it was deliberately moved out of `plant` |
 | Calibrated parameter distributions for `plant` | **phytofile** | consume the inferred parameters |
 | The simulation cache format / campaign state | **logpile** | use the pile; don't hand-roll caching |
 | Narrative docs / theory | **overstorey** (API reference: `plant` pkgdown) | link, don't duplicate |
@@ -131,14 +131,14 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
 
 ## Gotchas (the things that bite across boundaries)
 
-- **The `plant` ↔ `plant.assembly` interface is the live fault line.** Fitness/equilibrium code was
-  moved out of `plant` into `plant.assembly`, which pins a compatible `plant` via
+- **The `plant` ↔ `regnans` interface is the live fault line.** Fitness/equilibrium code was
+  moved out of `plant` into `regnans`, which pins a compatible `plant` via
   `.plant-interface-version`. Breaking changes in `plant`'s SCM / control / fitness API (e.g. the
   `build_schedule` → `run_scm(refine_schedule=TRUE)` consolidation) require a migration in
-  `plant.assembly`. See `governance/release-playbooks.md`.
+  `regnans`. See `governance/release-playbooks.md`.
 - **`plant` has two living lines.** `master` is the released 2.x; `develop` is where the `odelia`
   migration and API consolidation happen. Always confirm which branch a dependent pins
-  (`logpile` → `@develop`; `plant.assembly` → a `develop` post-#459 ref) before reasoning about deps.
+  (`logpile` → `@develop`; `regnans` → a `develop` post-#459 ref) before reasoning about deps.
 - **C++ compilation is part of every change to `plant`/`odelia`.** Both build C++ via Rcpp; a change
   to `odelia`'s header-only core can break the next-gen `plant` at compile time, not just at runtime.
 - **`logpile` caches by input hash.** If a `plant` change alters simulation outputs for the same
@@ -152,14 +152,14 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
 
 ## When you change something — ripple checklist
 
-- **Changing `plant`'s public R API / SCM / fitness interface** → migrate `plant.assembly` (bump
+- **Changing `plant`'s public R API / SCM / fitness interface** → migrate `regnans` (bump
   `.plant-interface-version`); check `logpile` campaigns and `overstorey` notebook posts pinned to the
   affected version. Treat as `breaking` if dependents must change.
 - **Changing `odelia`'s solver/headers** → recompile and test the next-gen `plant` core (LinkingTo).
 - **Changing `plant` simulation semantics** → stale `logpile` caches for the same inputs; invalidate.
 - **Re-calibrating in `phytofile`** → new parameter distributions; update downstream `plant` runs that
   consume them.
-- **Cutting a new `plant` release** → update version pins/badges in `overstorey`, `plant.assembly`'s
+- **Cutting a new `plant` release** → update version pins/badges in `overstorey`, `regnans`'s
   interface file, and any `logpile`/`floracle` campaigns.
 
 See `governance/release-playbooks.md` for the step-by-step versions of these.
