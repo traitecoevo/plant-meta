@@ -1,0 +1,56 @@
+# labels.yml — plant family label taxonomy (single source of truth)
+#
+# Scope: plant FAMILY only. Applied by apply-labels.sh to a hard-coded repo list.
+#
+# Deliberately SMALL — 8 labels. The guiding rule: a label only exists for what the BOARD can't
+# express. The board (#5) owns the linear workflow and metadata; labels own the orthogonal stuff.
+#
+# ORG CONSISTENCY: the work-type core (bug/task/epic) uses the same names + descriptions as the
+# AusTraits family (austraits-meta) and matches what plant/overstorey/plant.assembly already used.
+# Colours are a conventional, distinct palette (bug=red, task=blue, epic=purple) — plant's previous
+# colours weren't intuitive (task & epic both blue); this converges both families onto one palette.
+#
+# WHAT THE BOARD OWNS (not labels — they don't auto-sync, so mirroring drifts):
+#   * Status  : Backlog / In Progress / Done  (new issues land with NO status = the "triage" queue;
+#               triaging moves to Backlog. There is NO triage label.)
+#   * Area    : single-select cross-cutting cut (dev / data; legacy option `interface` retained)
+#   * Which repo : the board's Repository field (so there are NO pkg: labels)
+#   * Sub-area within a repo : a `[prefix]` in the issue title (e.g. `[env drivers] ...`)
+#
+# Board #5 has NO Priority field today (unlike austraits #9) — so there are no priority labels either.
+#
+# See governance/project-board.md and governance/triage.md.
+
+labels:
+
+  # ---- work-type (shared org core; same names/descriptions as austraits + plant) ------
+  - name: "bug"
+    color: "d73a4a"          # red — defect
+    description: "Existing feature not functioning as intended"
+  - name: "task"
+    color: "0075ca"          # blue — discrete work
+    description: "A discrete task needed for a feature"
+  - name: "epic"
+    color: "6f42c1"          # purple — big feature/capability
+    description: "A new feature or capability"
+
+  # ---- orthogonal flags (coexist with any board Status; bare, not status:*) -----
+  - name: "blocked"
+    color: "e99695"
+    description: "Blocked on another issue, repo, or external dependency."
+  - name: "needs-info"
+    color: "d4c5f9"
+    description: "Waiting on reporter/maintainer for more information."
+
+  # ---- community ----------------------------------------------------------------
+  - name: "question"
+    color: "d876e3"
+    description: "A question or request for clarification."
+
+  # ---- cross-package signals (the meta repo's reason to exist) ------------------
+  - name: "cross-package"
+    color: "fb8c00"
+    description: "Ripples beyond this repo: coordinated changes/rebuilds across packages."
+  - name: "breaking"
+    color: "e11d21"
+    description: "Breaking change with downstream impact — update dependents."

@@ -1,0 +1,184 @@
+# dependencies.yml
+# Machine-readable cross-package graph for the plant family.
+#
+# Two edge kinds, deliberately separated because they can point opposite ways:
+#   - r_imports / r_depends / r_linkingto : install/build-time R + C++ package graph
+#   - data_consumes                       : workflow/run-time artifact flow (calibrate -> model -> use)
+#
+# DRIFT CAVEAT: hand-maintained. The `plant` family has two living lines (master = released 2.x,
+# develop = odelia migration + API consolidation); edges differ by branch. Verify against the repo
+# and branch before relying on them. See AGENTS.md for the narrative version.
+
+meta:
+  family: plant
+  org: traitecoevo
+  board: https://github.com/orgs/traitecoevo/projects/5
+  sibling_family: austraits (austraits-meta)   # shared bug/task/epic core; otherwise independent
+  scope_note: >
+    plant family only. Does NOT apply org-wide or to other families (e.g. AusTraits).
+  last_reviewed: 2026-06-28
+
+packages:
+
+  plant:
+    repo: traitecoevo/plant
+    kind: r-package                  # R + C++ (Rcpp / RcppR6 / R6); not on CRAN
+    role: Core individual-based, size- and trait-structured forest demography model (the hub)
+    source_of_truth_for:
+      - the forest model engine (FF16 physiology, alternative physiologies)
+      - the SCM solver and patch / metapopulation dynamics
+      - invasion-fitness primitives consumed by plant.assembly
+    default_branch: develop          # master = released 2.x line
+    released_version: 2.0.0
+    r_imports: [Rcpp, R6, loggr, crayon, nleqslv, BB]
+    r_linkingto: [Rcpp, BH]          # next-gen (develop) line also links odelia — verify on branch
+    r_depends: []
+    data_consumes:
+      - from: phytofile
+        artifacts: [calibrated parameter distributions]
+        via: parameter inputs to model runs
+    produces:
+      - the plant R package (model objects, SCM, FF16)
+      - simulation outputs (cached by logpile)
+
+  odelia:
+    repo: traitecoevo/odelia
+    kind: r-package                  # R + header-only C++ (Rcpp, LinkingTo: Rcpp)
+    role: Standalone ODE solver with automatic differentiation (adaptive RK4-5)
+    source_of_truth_for:
+      - the ODE integrator + autodiff core (vendored XAD)
+    default_branch: master
+    r_imports: [Rcpp, R6, dplyr]
+    r_linkingto: [Rcpp]
+    r_depends: []
+    data_consumes: []
+    produces:
+      - header-only C++ solver other Rcpp packages can link against
+      - R6 wrappers around the C++ objects
+    note: >
+      Spun out of plant's solver (orig. R. FitzJohn). The next-generation plant core links against it;
+      released plant 2.x does not yet.
+
+  plant.assembly:
+    repo: traitecoevo/plant.assembly
+    kind: r-package
+    role: Community assembly + trait evolution on top of plant
+    source_of_truth_for:
+      - assembly / evolution machinery (selection gradients, equilibria, fitmax/stochastic assembly)
+      - the fitness/equilibrium code moved out of plant
+    default_branch: master
+    r_imports: [plant, lhs, mvtnorm]
+    r_depends:
+      - package: plant
+        via: ".plant-interface-version (pins a compatible develop ref; post-#459)"
+    data_consumes:
+      - engine: plant                # solves communities by repeatedly invoking plant
+    produces:
+      - the plant.assembly R package (community_demography, selection gradients, attractors)
+
+  logpile:
+    repo: traitecoevo/logpile
+    kind: r-package
+    role: Content-addressed cache for expensive, deterministic plant simulations
+    source_of_truth_for:
+      - the simulation cache format / campaign state (SHA-256 of inputs; fault-tolerant; resumable)
+    default_branch: main
+    r_imports: [arrow, dplyr, fs]
+    r_depends:
+      - package: plant
+        ref: "traitecoevo/plant@develop"   # Remotes
+    data_consumes:
+      - from: plant
+        artifacts: [simulation runs]
+        via: caches plant model evaluations by input hash
+    produces:
+      - cached simulation results (Arrow/parquet piles)
+
+  phytofile:
+    repo: traitecoevo/phytofile
+    kind: compendium                 # private; uses stateline (MCMC) + remake
+    role: Bayesian/MCMC calibration of plant parameters ("parameters for the tree model")
+    visibility: private
+    default_branch: master
+    r_imports: []
+    r_depends: []
+    data_consumes:
+      - from: mulga_plots_data (and other field/literature sources)
+        artifacts: [field observations]
+      - engine: plant                # infers parameters for the plant model
+    produces:
+      - calibrated parameter distributions for plant
+
+  plant-meta:
+    repo: traitecoevo/plant-meta
+    kind: governance
+    role: This repo — cross-package knowledge + governance
+    default_branch: main
+    r_imports: []
+    r_depends: []
+    data_consumes: []
+    produces:
+      - dependencies.yml
+      - governance/*
+
+# Docs / visualisation (in board #5 scope, outside the model core).
+docs_and_viz:
+  overstorey:
+    repo: traitecoevo/overstorey
+    kind: quarto-site
+    role: Narrative documentation for plant (guides, theory, version-pinned notebook)
+    default_branch: master
+    relation: renders against a pinned plant version; API reference stays on plant's pkgdown site
+  standviz:
+    repo: traitecoevo/standviz
+    kind: r-package                  # package name: trees3D
+    role: 3D visualisation of individual trees / stands via rgl (openGL)
+    default_branch: master
+    relation: standalone; can visualise plant output; largely dormant (circa 2016)
+
+# Applications / research projects (board #5 scope; governance handling varies — see AGENTS.md).
+applications:
+  floracle:
+    repo: traitecoevo/floracle
+    kind: nascent                    # empty repo as of 2026-06-28
+    role: Forecasting with the plant model (planned)
+    default_branch: master
+  mulgafutures:
+    repo: traitecoevo/mulgafutures
+    kind: project-tracker            # private; ARC Linkage LP230100049
+    role: Project-delivery tracker for the mulga carbon-farming forecasting project
+    visibility: private
+    default_branch: master
+    governance_note: >
+      Has its OWN board and a bespoke manuscript/work-package label taxonomy (WP1/WP2/WP3, draft
+      stages, at-risk, dans-eyes, ...). EXCLUDED from the family label taxonomy by design. WP3
+      calibrates/extends plant to mulga stands.
+  mulga_plots_data:
+    repo: traitecoevo/mulga_plots_data
+    kind: data                       # private
+    role: Field-plot data for the mulga project; feeds phytofile/plant calibration
+    visibility: private
+    default_branch: master
+
+# Cross-boundary artifacts (producer -> consumer). authored = hand-edited; generated = built by code.
+cross_boundary_artifacts:
+  - artifact: calibrated parameter distributions
+    producer: phytofile
+    consumer: plant (model runs)
+    nature: generated (MCMC inference)
+  - artifact: .plant-interface-version
+    producer: plant.assembly (pins plant)
+    consumer: plant.assembly build/tests
+    nature: authored (records the compatible plant ref + applied breaking-change migrations)
+  - artifact: plant simulation runs
+    producer: plant
+    consumer: logpile (cache), plant.assembly (assembly), floracle (forecasts)
+    nature: generated (deterministic given inputs; cached by SHA-256 hash)
+  - artifact: header-only ODE solver
+    producer: odelia
+    consumer: next-generation plant core (LinkingTo)
+    nature: generated (C++ headers)
+  - artifact: field-plot observations
+    producer: mulga_plots_data
+    consumer: phytofile (calibration)
+    nature: authored (field data)
