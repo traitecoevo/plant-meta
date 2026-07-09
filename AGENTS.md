@@ -124,6 +124,7 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
 | The ODE integrator + autodiff core | **odelia** | link against it; don't re-vendor |
 | Community assembly / trait evolution machinery (fitness, equilibrium, selection gradients) | **regnans** | call it; it was deliberately moved out of `plant` |
 | Calibrated parameter distributions for `plant` | **phytofile** | consume the inferred parameters |
+| Per-model **scientific version** (`FF16@v1`, `TF24@v2`, …) | **plant** (`scientific_version` constant → `model_version()`/`model_id()`) | read it; don't hand-type versions |
 | The simulation cache format / campaign state | **logpile** | use the pile; don't hand-roll caching |
 | Narrative docs / theory | **overstorey** (API reference: `plant` pkgdown) | link, don't duplicate |
 
@@ -141,9 +142,14 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
   (`logpile` → `@develop`; `regnans` → a `develop` post-#459 ref) before reasoning about deps.
 - **C++ compilation is part of every change to `plant`/`odelia`.** Both build C++ via Rcpp; a change
   to `odelia`'s header-only core can break the next-gen `plant` at compile time, not just at runtime.
-- **`logpile` caches by input hash.** If a `plant` change alters simulation outputs for the same
-  inputs (a behavioural change, not just a refactor), cached results become stale — the hash won't
-  notice a semantics change behind an unchanged input. Invalidate deliberately.
+- **`logpile` caches by input hash, keyed partly on the model's scientific version.** Each `plant`
+  model has a `scientific_version` (exposed as `model_id()`, e.g. `FF16@v1`) independent of the
+  package `Version`; `logpile` folds it into the fingerprint. So invalidation is deliberate but
+  *declarative*: bump the model's `scientific_version` in `plant` when a change alters outputs for
+  the same inputs, and affected runs re-run automatically while software-only releases reuse the
+  cache. The residual risk is a maintainer who changes behaviour **without** bumping the version —
+  a drift-guard test in `plant` catches default-parameter changes, but pure equation changes rely on
+  review. See `governance/release-playbooks.md` §3.
 - **`mulgafutures` is a tracker, not a package.** It coordinates a funded project and has its own
   board + bespoke labels. Don't apply the family label taxonomy to it or treat it as model code.
 - **`floracle` is empty today.** Treat references to it as forward-looking until it has commits.
@@ -156,7 +162,9 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
   `.plant-interface-version`); check `logpile` campaigns and `overstorey` notebook posts pinned to the
   affected version. Treat as `breaking` if dependents must change.
 - **Changing `odelia`'s solver/headers** → recompile and test the next-gen `plant` core (LinkingTo).
-- **Changing `plant` simulation semantics** → stale `logpile` caches for the same inputs; invalidate.
+- **Changing `plant` simulation semantics** → bump the model's `scientific_version` in `plant` (same
+  commit); `logpile` re-derives it and reruns affected campaigns automatically. No bump = silently
+  stale caches.
 - **Re-calibrating in `phytofile`** → new parameter distributions; update downstream `plant` runs that
   consume them.
 - **Cutting a new `plant` release** → update version pins/badges in `overstorey`, `regnans`'s
