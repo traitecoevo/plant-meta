@@ -38,13 +38,24 @@ for `regnans`. Default to treating it as breaking.
 
 ---
 
-## 3. `plant` simulation-semantics change → invalidate `logpile` caches
+## 3. `plant` simulation-semantics change → bump the model's scientific version
+
+Each `plant` model carries a **scientific version** (a `scientific_version` constant on the
+strategy class, exposed as `plant::model_version()` / `model_id()`, e.g. `FF16@v1`) that is
+independent of the package `Version`. `logpile` reads it into the request fingerprint, so cache
+invalidation tracks *scientific* changes rather than software releases.
 
 1. **plant** — if a change alters simulation **outputs for the same inputs** (a behavioural change,
-   not a pure refactor), the `logpile` content-address (SHA-256 of inputs) will NOT notice it.
-2. **logpile** — invalidate or namespace the affected piles deliberately (e.g. bump a model/version
-   token in the request) so stale results aren't reused.
-3. Re-run affected calibration/assembly campaigns.
+   not a pure refactor, performance or interface change), **bump the model's `scientific_version`**
+   in its header (`inst/include/plant/models/*_strategy.h`), in the same commit. The drift-guard test
+   (`tests/testthat/test-model-version.R`) fails on a default-parameter change made without a bump;
+   pure equation changes rely on the reviewer. TF24f is a fast approximation of TF24 and carries a
+   **compound** version (`TF24f@v2.1`) whose major component auto-tracks TF24, so a TF24 bump
+   invalidates TF24f too.
+2. **logpile** — nothing to do: `resolve_request()` re-derives the version from `plant`, so a bump
+   changes the fingerprint and the affected runs re-run automatically; a software-only `plant` release
+   leaves it untouched and cached results are reused.
+3. Re-run affected calibration/assembly campaigns (they re-run only for the bumped model).
 
 ---
 
@@ -73,6 +84,6 @@ for `regnans`. Default to treating it as breaking.
 |--------------|----------------------|
 | `plant` SCM/control/fitness API | migrate `regnans` (+ `.plant-interface-version`); `logpile`/`overstorey` pins (breaking) |
 | `odelia` solver/headers | recompile next-gen `plant` core (LinkingTo) |
-| `plant` simulation semantics | invalidate `logpile` caches for same inputs |
+| `plant` simulation semantics | bump the model's `scientific_version` in `plant`; `logpile` reruns automatically |
 | `phytofile` calibration | downstream `plant` runs / `floracle` forecasts consuming the parameters |
 | `plant` release/version | version pins/badges in `regnans`, `overstorey`, `logpile`, `floracle` |
