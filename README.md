@@ -21,6 +21,7 @@ and the shared label/triage conventions.
 | [`governance/issue-guide.md`](governance/issue-guide.md) | Contributor guide: how to file & label issues across the family (repos point here). |
 | [`governance/release-playbooks.md`](governance/release-playbooks.md) | Cross-repo change sequences (e.g. "plant interface change → migrate regnans"). |
 | [`governance/triage.md`](governance/triage.md) | Contribution + triage discipline; open scope questions. |
+| [`governance/model-robustness.md`](governance/model-robustness.md) | What a model should represent (zero growth, shutdown) vs. refuse (physically unrealistic states); what a failure message must contain. |
 
 ## Scope
 
