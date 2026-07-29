@@ -29,6 +29,31 @@ Fail — but the message must say what was exhausted *and where*, because the ca
 somewhere else entirely. A resolution complaint that names no location sends the reader after
 the wrong thing.
 
+## Better than either: design the awkward limit out
+
+The strongest version of this principle is applied when choosing the functional form, not when
+adding a guard. If a limit is well-behaved by construction there is nothing to represent and
+nothing to refuse.
+
+The worked case is `plant`'s density boundary condition, `n = birth_rate · pr_estab / g` at the
+introduction size. Taken naively that diverges as growth `g → 0⁺`, and a diverging density
+would be a genuinely unrealistic state needing a guard. It doesn't diverge, because
+`establishment_probability` was chosen so that it can't: for net production `P > 0` it is
+
+```
+pr_estab = 1 / ((a_d0 · A_0 / P)² + 1) · decay(t)
+```
+
+which is **quadratic** in `P` as `P → 0⁺`, while `g` is only **linear** in `P`. So
+`n = O(P) → 0`: the singularity cancels with a power to spare, and density falls smoothly to
+zero as growth does. The `g <= 0` branch returning density exactly zero is then the *continuous
+extension* of that limit rather than an arbitrary choice, and "nothing establishes when nothing
+can grow" is a sensible biological output rather than a special case.
+
+Worth knowing when reading such a branch: `if (g > 0) ... else 0` can look like a guard bolted
+on to dodge a division, when it is the limit of a form deliberately built to have one. Check
+before "fixing" it.
+
 ## What "fail" has to look like
 
 An error is a diagnosis, not a notification. It should name the quantity, its value, the
@@ -86,6 +111,8 @@ Reasonable questions to ask of a PR that adds or removes a guard:
 - Which side of the table is this state on, and how do you know? Beware of classifying a state
   as impossible because the *numbers look odd* — check what the model's representation actually
   means first (the zero-density characteristic above is the cautionary case).
+- Could the awkward limit be designed out instead of guarded? And conversely: is the branch you
+  are about to "fix" actually the limit of a form built to be well-behaved?
 - How often does the branch fire — never in healthy runs, or constantly? Measure it; the answer
   usually settles the argument.
 - If it returns a value rather than failing, is the state **observable** in the outputs? A state
