@@ -49,6 +49,14 @@ Add cross-package signals whenever work spans repos:
   `cross-package` (+ `breaking` if dependents must change). The `plant` ↔ `regnans` interface
   (`.plant-interface-version`) is the one to watch.
 
+## Model behaviour (what should run vs. what should fail)
+
+Models should run across a wide range of strategies and environmental conditions and produce
+sensible biological outputs — including zero growth or reproduction — rather than crash; but a
+physically unrealistic state should fail rather than be continued from. The decision rule, what
+a failure message has to contain, and the questions to ask in review are in
+[`model-robustness.md`](model-robustness.md).
+
 ## Source-of-truth reminders (don't fight the architecture)
 
 - The forest model engine → **plant**. Don't fork the model downstream.
