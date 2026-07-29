@@ -58,10 +58,22 @@ These are the cases that produced this document (`plant`, 2026-07):
   ([plant #571](https://github.com/traitecoevo/plant/issues/571),
   [#573](https://github.com/traitecoevo/plant/pull/573),
   [#574](https://github.com/traitecoevo/plant/pull/574)).
-- **Cohorts born at exactly zero density that grow to canopy height → not attainable, so it
-  should not pass silently.** The run completes and reports a patch of 15 m trees that carry no
-  density. This is the case the principle's second half is for: it is currently neither
-  represented nor refused ([plant #575](https://github.com/traitecoevo/plant/issues/575)).
+- **A cohort at exactly zero density whose trajectory grows to canopy height → represent, and
+  do not mistake it for a defect.** This one is worth spelling out because it reads like a bug
+  and isn't. In the method of characteristics a cohort *is* a trajectory, and the density
+  transported along it is a separate quantity. A characteristic carrying zero density says
+  exactly what it should: a plant that had germinated at that moment would by now be 15 m tall,
+  and none did, because the flux into the size distribution was zero when growth was. Both
+  halves of that are outputs the model is supposed to produce. The mistake to avoid is reading
+  "a 15 m plant with no density" as physically impossible and reaching for the second half of
+  the principle: nothing impossible has happened, and `density = 0` in the output *is* the
+  disclosure that nothing established.
+- **A NaN rate written into the soil state → refuse.** A layer at the residual moisture floor
+  gave `psi_soil` ≈ 9.3e7 MPa, the leaf solve returned a non-finite depletion, and the
+  positivity guard meant to catch it did not, because `NaN < 0.0` is `false`. A non-finite
+  water flux is not a state the soil can be in, so continuing from it can only produce
+  nonsense — this is what the second half of the principle is for
+  ([plant #549](https://github.com/traitecoevo/plant/issues/549), fixed).
 - **A spline evaluated outside its domain → decide which side it is on.** If conductivity
   really is ~0 out there, clamping is a physical statement and the model should continue; if
   not, it should fail. Either way the error must name the spline, the point, and the domain
@@ -71,7 +83,9 @@ These are the cases that produced this document (`plant`, 2026-07):
 
 Reasonable questions to ask of a PR that adds or removes a guard:
 
-- Which side of the table is this state on, and how do you know?
+- Which side of the table is this state on, and how do you know? Beware of classifying a state
+  as impossible because the *numbers look odd* — check what the model's representation actually
+  means first (the zero-density characteristic above is the cautionary case).
 - How often does the branch fire — never in healthy runs, or constantly? Measure it; the answer
   usually settles the argument.
 - If it returns a value rather than failing, is the state **observable** in the outputs? A state
