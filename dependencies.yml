@@ -16,7 +16,7 @@ meta:
   sibling_family: austraits (austraits-meta)   # shared bug/task/epic core; otherwise independent
   scope_note: >
     plant family only. Does NOT apply org-wide or to other families (e.g. AusTraits).
-  last_reviewed: 2026-06-28
+  last_reviewed: 2026-08-05
 
 packages:
 
@@ -31,7 +31,7 @@ packages:
     default_branch: develop          # master = released 2.x line
     released_version: 2.0.0
     r_imports: [Rcpp, R6, loggr, crayon, nleqslv, BB]
-    r_linkingto: [Rcpp, BH]          # next-gen (develop) line also links odelia — verify on branch
+    r_linkingto: [Rcpp, BH]          # next-gen (develop) line also links odelia + phylloptim — verify on branch
     r_depends: []
     data_consumes:
       - from: phytofile
@@ -58,6 +58,31 @@ packages:
     note: >
       Spun out of plant's solver (orig. R. FitzJohn). The next-generation plant core links against it;
       released plant 2.x does not yet.
+
+  phylloptim:
+    repo: traitecoevo/phylloptim
+    kind: r-package                  # R + header-only C++ (RcppR6 R layer over R-free headers)
+    role: Leaf gas exchange, hydraulics and leaf optimality, extracted from plant's TF24 strategy
+    former_names: [leaf, leaf_cpp]   # renamed 2026-08-05; `leaf` is taken on CRAN, `leaf_cpp` is not a legal R package name
+    source_of_truth_for:
+      - leaf-level gas exchange (FvCB coupled to an explicit soil-root-stem-leaf transport path)
+      - the water-supply path (multi-layer roots / single soil potential, behind one interface)
+      - stomatal optimality models sharing one numerical core (they differ only in lambda(state))
+      - planned: optimum Vcmax (coordination hypothesis) and optimum leaf lifespan
+    default_branch: master
+    r_imports: [Rcpp, R6]
+    r_linkingto: [Rcpp, BH, odelia]
+    r_depends: []
+    data_consumes: []
+    produces:
+      - header-only C++ leaf model that plant links against (no compiled code to link)
+      - an R surface (leaf_solve / leaf_traits / leaf_control) and a CMake package for non-R consumers
+    note: >
+      Sits BETWEEN odelia and plant: it LinkingTo's odelia, and the next-generation plant
+      LinkingTo's it. plant's copy of this model is deleted, not forked; the coupling runs through
+      one shim header (plant/leaf_model.h) that re-exports phylloptim::Leaf as plant::Leaf.
+      The exported R functions and the Leaf class keep `leaf_`/`Leaf` names — they name the
+      modelled object, not the package.
 
   regnans:
     repo: traitecoevo/regnans
@@ -176,7 +201,11 @@ cross_boundary_artifacts:
     nature: generated (deterministic given inputs; cached by SHA-256 hash)
   - artifact: header-only ODE solver
     producer: odelia
-    consumer: next-generation plant core (LinkingTo)
+    consumer: next-generation plant core (LinkingTo), phylloptim (LinkingTo)
+    nature: generated (C++ headers)
+  - artifact: header-only leaf model
+    producer: phylloptim
+    consumer: next-generation plant core (LinkingTo, TF24/TF24f via the plant/leaf_model.h shim)
     nature: generated (C++ headers)
   - artifact: field-plot observations
     producer: mulga_plots_data

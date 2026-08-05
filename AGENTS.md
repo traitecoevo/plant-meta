@@ -31,6 +31,7 @@ applies it to a research project.
 |------|------|------|
 | `plant` | R + C++ package | The core **individual-based, size- and trait-structured forest demography model** (FF16 physiology, the SCM solver, patch/metapopulation dynamics, invasion fitness). The hub. |
 | `odelia` | R + C++ (header-only) package | A standalone **ODE solver with automatic differentiation** (adaptive RK4-5), spun out of `plant`'s solver. The next-generation `plant` core links against it. |
+| `phylloptim` | R + C++ (header-only) package | **Leaf gas exchange, hydraulics and leaf optimality**, extracted from `plant`'s TF24 strategy. FvCB photosynthesis coupled to an explicit soil→root→stem→leaf transport path, with the operating point chosen by profit maximisation. Home for several stomatal optimality models sharing one numerical core (they differ only in λ(state)); optimum Vcmax and optimum leaf lifespan are planned on the same machinery. **Was `leaf` / `leaf_cpp` until 2026-08-05** — `leaf` is taken on CRAN and `leaf_cpp` is not a legal R package name. |
 | `regnans` | R package | **Community assembly + trait evolution** on top of `plant` (selection gradients, equilibria, stochastic/fitmax assembly). The fitness/equilibrium machinery was moved here out of `plant`. |
 | `logpile` | R package | A **content-addressed cache** for expensive, deterministic `plant` simulations — built for simulation-based calibration. |
 | `phytofile` | compendium (private) | **Bayesian/MCMC calibration** of `plant` parameters — infers suitable parameter distributions for the tree model. |
@@ -70,17 +71,27 @@ There are **two graphs**, and they point different ways — the usual source of 
 
 ```
 odelia ─────────────(LinkingTo, next-gen plant core)────────────►  plant
+                                                                     ▲
+phylloptim ─────────(LinkingTo, TF24/TF24f leaf physiology)──────────┤
                                                                      │
                                           ┌──────────Depends─────────┤
                                           ▼                          ▼
                                    regnans               logpile  (Imports / Remotes plant)
 ```
 
+(`phylloptim` itself `LinkingTo`s `odelia` — the dependency runs
+`odelia → phylloptim → plant`.)
+
 - **`plant`** is the hub. On the released `master` line it has **no intra-family R dependencies**
   (`LinkingTo: Rcpp, BH`). On the development line the C++ ODE core is being replaced by **`odelia`**
   (the next-generation `plant` `LinkingTo`/`Imports` it). Verify against the branch you're on.
 - **`odelia`** is the spun-out ODE solver (originally Rich FitzJohn's solver inside `plant`). It has
   **no intra-family dependencies** — it's a foundational library others link against.
+- **`phylloptim`** is the leaf model extracted from `plant`'s TF24 strategy. It `LinkingTo`s
+  `odelia`, and the next-generation `plant` `LinkingTo`s it in turn, so it sits *between* the two.
+  The coupling into `plant` is funnelled through a single shim header
+  (`inst/include/plant/leaf_model.h`) that re-exports `phylloptim::Leaf` as `plant::Leaf`, which is
+  what keeps `plant`'s ~17k lines of generated glue from having to move.
 - **`regnans`** **Depends** on `plant` and pins a compatible version via
   [`.plant-interface-version`](https://github.com/traitecoevo/regnans) (the
   `plant`↔`regnans` interface — fitness/equilibrium machinery — was recently split out of
@@ -122,6 +133,7 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
 |---------|--------------------|---------------|
 | The forest model engine (physiology, SCM solver, patch/metapopulation dynamics) | **plant** | consume; don't fork the model |
 | The ODE integrator + autodiff core | **odelia** | link against it; don't re-vendor |
+| Leaf gas exchange, hydraulics and leaf optimality (λ(state), FvCB, the water-supply path) | **phylloptim** | link against it; `plant`'s copy is deleted, not forked |
 | Community assembly / trait evolution machinery (fitness, equilibrium, selection gradients) | **regnans** | call it; it was deliberately moved out of `plant` |
 | Calibrated parameter distributions for `plant` | **phytofile** | consume the inferred parameters |
 | Per-model **scientific version** (`FF16@v1`, `TF24@v2`, …) | **plant** (`scientific_version` constant → `model_version()`/`model_id()`) | read it; don't hand-type versions |
@@ -140,8 +152,13 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
 - **`plant` has two living lines.** `master` is the released 2.x; `develop` is where the `odelia`
   migration and API consolidation happen. Always confirm which branch a dependent pins
   (`logpile` → `@develop`; `regnans` → a `develop` post-#459 ref) before reasoning about deps.
-- **C++ compilation is part of every change to `plant`/`odelia`.** Both build C++ via Rcpp; a change
-  to `odelia`'s header-only core can break the next-gen `plant` at compile time, not just at runtime.
+- **C++ compilation is part of every change to `plant`/`odelia`/`phylloptim`.** All three build C++
+  via Rcpp; a change to `odelia`'s or `phylloptim`'s header-only core can break the next-gen `plant`
+  at compile time, not just at runtime.
+- **`phylloptim` was called `leaf` (repo `leaf_cpp`) until 2026-08-05.** Old references, issue links
+  and `LinkingTo: leaf` in anything not yet updated all mean this package. GitHub redirects the repo
+  name, but `LinkingTo: leaf` will silently resolve to the *unrelated CRAN package* of that name, so
+  it fails confusingly rather than cleanly.
 - **`logpile` caches by input hash, keyed partly on the model's scientific version.** Each `plant`
   model has a `scientific_version` (exposed as `model_id()`, e.g. `FF16@v1`) independent of the
   package `Version`; `logpile` folds it into the fingerprint. So invalidation is deliberate but
@@ -161,7 +178,11 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
 - **Changing `plant`'s public R API / SCM / fitness interface** → migrate `regnans` (bump
   `.plant-interface-version`); check `logpile` campaigns and `overstorey` notebook posts pinned to the
   affected version. Treat as `breaking` if dependents must change.
-- **Changing `odelia`'s solver/headers** → recompile and test the next-gen `plant` core (LinkingTo).
+- **Changing `odelia`'s solver/headers** → recompile and test the next-gen `plant` core (LinkingTo),
+  and `phylloptim`, which links `odelia` too.
+- **Changing `phylloptim`'s headers or model** → recompile and test `plant`'s TF24/TF24f strategies
+  (LinkingTo, via the `plant/leaf_model.h` shim), and re-check `phylloptim`'s golden file before
+  assuming a numerical change is benign.
 - **Changing `plant` simulation semantics** → bump the model's `scientific_version` in `plant` (same
   commit); `logpile` re-derives it and reruns affected campaigns automatically. No bump = silently
   stale caches.

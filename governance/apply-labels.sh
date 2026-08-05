@@ -26,6 +26,7 @@ set -euo pipefail
 FAMILY_REPOS=(
   # model core
   traitecoevo/plant
+  traitecoevo/phylloptim
   traitecoevo/odelia
   traitecoevo/regnans
   traitecoevo/logpile
