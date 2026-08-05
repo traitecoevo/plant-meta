@@ -42,7 +42,13 @@ Add cross-package signals whenever work spans repos:
 - All work goes through a **feature branch + PR**; never commit to a repo's default branch.
 - Default branches vary across the family — confirm before branching:
   `plant` → `develop`, `odelia` → `master`, `regnans` → `master`, `logpile` → `main`,
-  `phytofile` → `master`, `overstorey` → `master`, `standviz` → `master`, `plant-meta` → `main`.
+  `phytofile` → `master`, `overstorey` → `master`, `standviz` → `master`, `plant-meta` → `main`,
+  `phylloptim` → `master`.
+- **The PR title and body are the commit message** — every repo squash-merges, so they land in
+  permanent history verbatim. Keep the subject ≤72 characters including the ` (#NNN)` GitHub
+  appends and the body under 20 lines; post the working detail (measurements, alternatives
+  rejected, what you tried first) as the first PR comment instead. Full guidance, and the
+  measurement that prompted it, in [`commit-messages.md`](commit-messages.md).
 - R packages: PRs must pass `R CMD check` / testthat (see each repo's `.github/workflows/`).
   `plant` and `odelia` compile C++ — a green check means it built, not just that R code parsed.
 - For cross-package changes, link the PRs to each other and to the tracking issue, and label

@@ -187,3 +187,8 @@ See `governance/release-playbooks.md` for the step-by-step versions of these.
 - [`governance/release-playbooks.md`](governance/release-playbooks.md) — cross-repo change sequences.
 - [`governance/triage.md`](governance/triage.md) — contribution + triage discipline, plus open scope
   questions for maintainers.
+- [`governance/commit-messages.md`](governance/commit-messages.md) — the PR title and body become the
+  commit message under squash merge; what belongs there and what belongs in a PR comment instead.
+- [`governance/model-robustness.md`](governance/model-robustness.md) — what a model should represent
+  (zero growth, hydraulic shutdown) vs. refuse (physically unrealistic states), and what a failure
+  message has to contain.
