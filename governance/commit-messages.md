@@ -90,18 +90,23 @@ than a commit-writing one — and what makes it fixable by moving text one box d
 
 ## Mechanics
 
-Two repo settings and one habit make this the path of least resistance:
+One repo setting and one habit make this the path of least resistance:
 
-- **Squash defaults** — set each repo to use the PR title and body rather than concatenating commit
-  subjects, or GitHub interleaves both and leaves `---------` separators in history:
-  `gh api -X PATCH repos/traitecoevo/<repo> -f squash_merge_commit_title=PR_TITLE
-  -f squash_merge_commit_message=PR_BODY`.
+- **Squash defaults** — a repo must be set to use the PR title and body, or GitHub builds the commit
+  message from the individual commit subjects instead and the description never reaches history at
+  all. **All ten family repos are already set correctly** (checked 2026-08-05); verify with
+  `gh api repos/traitecoevo/<repo> --jq '{squash_merge_commit_title, squash_merge_commit_message}'`,
+  which should return `PR_TITLE` and `PR_BODY`.
 - **`.github/PULL_REQUEST_TEMPLATE.md`** — keep it minimal. A PR body is copied into the commit
   *including HTML comments*, so a commented-out questionnaire ends up in history; the template
   should hold only the parts that belong in a commit.
 - **Post the comment when you open the PR**, not at merge time. Written after the fact it becomes
   a summary; written as you go it is the thing you would otherwise have padded the description
   with.
+
+The `---------` line above the `Co-authored-by:` block in older commits is **not** a symptom of any
+of this — it is GitHub's own separator, added automatically when it aggregates co-author trailers
+from the commits being squashed. Nothing to fix.
 
 ---
 
