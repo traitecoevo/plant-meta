@@ -134,6 +134,37 @@ packages:
     produces:
       - calibrated parameter distributions for plant
 
+  fieldtrial:
+    repo: traitecoevo/fieldtrial
+    kind: r-package
+    role: Parameter sets, trait trade-offs and environmental drivers that set up plant runs
+    source_of_truth_for:
+      - the recommended trait -> parameter trade-off functions and their coefficient sets (plant keeps only a frozen testing copy, loaded explicitly)
+      - named species x site parameter sets (traits, coefficient overrides, soil, site, driver series, provenance)
+      - the canonical daily met table and the adapters that fill it from climate sources (AGCD, FLUXNET Shuttle, WorldClim, CRU TS; later SILO, TerraClimate, ERA5-Land)
+    default_branch: main
+    r_imports: [plant, yaml]
+    r_linkingto: []
+    r_depends:
+      - package: plant
+        via: ".plant-interface-version (pins a compatible develop ref; Remotes traitecoevo/plant@develop)"
+    data_consumes:
+      - from: AGCD, FLUXNET Shuttle, WorldClim, CRU TS (external climate products)
+        artifacts: [gridded and flux-tower climate]
+        via: adapters that write the canonical met table; raw grids never enter the repo
+      - from: phytofile, mulga-library, literature
+        artifacts: [trait and parameter values with citations]
+        via: parameter set files
+    produces:
+      - trade-off functions satisfying plant's hyperpar contract f(m, s, filter)
+      - parameter sets that materialise to the four run_scm() inputs (Parameters, Environment, Control, Events)
+      - daily driver tables and small derived site series
+    note: >
+      Scoped 2026-11-09 (plant #697, #698, #701). Dependency runs one way, fieldtrial -> plant; plant
+      never imports it. plant's default_parameters() is a frozen testing set that warns it is not a
+      recommended parameterisation. plant's side (default_parameters, Parameters carrying its
+      trade-offs) is NOT yet implemented; see fieldtrial's PLAN.md for what has landed.
+
   plant-meta:
     repo: traitecoevo/plant-meta
     kind: governance
@@ -211,3 +242,11 @@ cross_boundary_artifacts:
     producer: mulga_plots_data
     consumer: phytofile (calibration)
     nature: authored (field data)
+  - artifact: trait trade-off functions (hyperpar contract)
+    producer: fieldtrial
+    consumer: plant runs (attached to Parameters), regnans, logpile (hashed into the fingerprint)
+    nature: authored (R functions + coefficient YAML); plant keeps a FROZEN testing copy, so two copies exist by decision
+  - artifact: parameter sets + driver tables
+    producer: fieldtrial
+    consumer: plant (run_scm inputs), floracle (forecast baselines), overstorey (worked examples)
+    nature: authored (YAML sets with provenance) + generated (met tables from climate adapters)

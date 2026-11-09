@@ -1,7 +1,7 @@
 # Filing & labelling issues — plant family
 
 A short contributor guide for issues across the plant family (`plant`, `odelia`, `regnans`,
-`logpile`, `phytofile`, `overstorey`, `standviz`, `floracle`). The family is tracked on one board,
+`fieldtrial`, `logpile`, `phytofile`, `overstorey`, `standviz`, `floracle`). The family is tracked on one board,
 [#5](https://github.com/orgs/traitecoevo/projects/5); new issues are **auto-added** to it.
 
 ## Where to file
@@ -9,8 +9,8 @@ A short contributor guide for issues across the plant family (`plant`, `odelia`,
 File in the repo the issue is *about*. Unsure which? File in the most likely one — maintainers
 re-home it. For cross-package work, file in the primary repo and link the others. See
 [`../AGENTS.md`](../AGENTS.md) for who owns what (`plant` = the model engine, `odelia` = the ODE
-solver, `regnans` = assembly/evolution, `phytofile` = calibration, `logpile` = the simulation
-cache).
+solver, `regnans` = assembly/evolution, `fieldtrial` = parameter sets + climate drivers,
+`phytofile` = calibration, `logpile` = the simulation cache).
 
 ## Title
 
