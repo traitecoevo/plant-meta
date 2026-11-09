@@ -76,8 +76,8 @@ a failure message has to contain, and the questions to ask in review are in
 ## Scope decisions
 
 **Decided 2026-06-28 — governance covers the model-core, docs, and viz repos plus `floracle`.** The
-label taxonomy applies to: model core (`plant`, `odelia`, `regnans`, `logpile`, `phytofile`,
-`plant-meta`), docs/viz (`overstorey`, `standviz`), and `floracle`. Each is listed explicitly in
+label taxonomy applies to: model core (`plant`, `odelia`, `regnans`, `fieldtrial`, `logpile`,
+`phytofile`, `plant-meta`), docs/viz (`overstorey`, `standviz`), and `floracle`. Each is listed explicitly in
 `apply-labels.sh`. Still family-scoped — never org-wide.
 
 **`mulgafutures` is excluded.** It is a project-delivery tracker with its **own board** and a

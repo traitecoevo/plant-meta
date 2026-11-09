@@ -75,6 +75,20 @@ invalidation tracks *scientific* changes rather than software releases.
 2. **regnans** — bump `.plant-interface-version` to the released ref if it should track it.
 3. **overstorey** — update the pinned `plant` version + version badges for released-line posts.
 4. **logpile** / **floracle** — update any pinned `traitecoevo/plant@…` refs.
+5. **fieldtrial** — bump its `.plant-interface-version`; re-run `check_set()` on every shipped set
+   (each records the plant `scientific_version` it was built against).
+
+---
+
+## 6. Changing a trade-off or a parameter set in `fieldtrial`
+
+1. **fieldtrial** — change the function or the set; re-run the bit-identity test against plant's
+   frozen `default_parameters()` copy and state in the PR whether the two now differ and why.
+2. **plant** — nothing to rebuild. Only if plant's frozen copy is deliberately moved as well: that
+   re-blesses plant's goldens and is a plant PR of its own.
+3. **logpile** — runs whose `Parameters` carry the changed function get a new fingerprint and
+   re-run; no action needed, but expect the cache miss.
+4. **overstorey** — worked examples that load the set re-render.
 
 ---
 
@@ -86,4 +100,5 @@ invalidation tracks *scientific* changes rather than software releases.
 | `odelia` solver/headers | recompile next-gen `plant` core (LinkingTo) |
 | `plant` simulation semantics | bump the model's `scientific_version` in `plant`; `logpile` reruns automatically |
 | `phytofile` calibration | downstream `plant` runs / `floracle` forecasts consuming the parameters |
-| `plant` release/version | version pins/badges in `regnans`, `overstorey`, `logpile`, `floracle` |
+| `plant` release/version | version pins/badges in `regnans`, `fieldtrial`, `overstorey`, `logpile`, `floracle` |
+| `fieldtrial` trade-off or set | bit-identity test vs plant's frozen copy; `logpile` cache misses; `overstorey` examples |

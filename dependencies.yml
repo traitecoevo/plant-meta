@@ -162,7 +162,8 @@ packages:
     note: >
       Scoped 2026-11-09 (plant #697, #698, #701). Dependency runs one way, fieldtrial -> plant; plant
       never imports it. plant's default_parameters() is a frozen testing set that warns it is not a
-      recommended parameterisation. See fieldtrial's PLAN.md.
+      recommended parameterisation. plant's side (default_parameters, Parameters carrying its
+      trade-offs) is NOT yet implemented; see fieldtrial's PLAN.md for what has landed.
 
   plant-meta:
     repo: traitecoevo/plant-meta
