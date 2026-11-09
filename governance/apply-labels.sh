@@ -29,6 +29,7 @@ FAMILY_REPOS=(
   traitecoevo/phylloptim
   traitecoevo/odelia
   traitecoevo/regnans
+  traitecoevo/fieldtrial
   traitecoevo/logpile
   traitecoevo/phytofile
   traitecoevo/plant-meta

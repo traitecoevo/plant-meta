@@ -41,7 +41,7 @@ Add cross-package signals whenever work spans repos:
 
 - All work goes through a **feature branch + PR**; never commit to a repo's default branch.
 - Default branches vary across the family — confirm before branching:
-  `plant` → `develop`, `odelia` → `master`, `regnans` → `master`, `logpile` → `main`,
+  `plant` → `develop`, `odelia` → `master`, `regnans` → `master`, `fieldtrial` → `main`, `logpile` → `main`,
   `phytofile` → `master`, `overstorey` → `master`, `standviz` → `master`, `plant-meta` → `main`,
   `phylloptim` → `master`.
 - **The PR title and body are the commit message** — every repo squash-merges, so they land in

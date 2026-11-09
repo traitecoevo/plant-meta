@@ -35,6 +35,7 @@ applies it to a research project.
 | `regnans` | R package | **Community assembly + trait evolution** on top of `plant` (selection gradients, equilibria, stochastic/fitmax assembly). The fitness/equilibrium machinery was moved here out of `plant`. |
 | `logpile` | R package | A **content-addressed cache** for expensive, deterministic `plant` simulations — built for simulation-based calibration. |
 | `phytofile` | compendium (private) | **Bayesian/MCMC calibration** of `plant` parameters — infers suitable parameter distributions for the tree model. |
+| `fieldtrial` | R package | **Parameter sets, trait trade-offs and environmental drivers** that set up `plant` runs: named species × site sets with provenance, the recommended trait → parameter trade-off functions (moved out of `plant`, which keeps a frozen testing copy), and adapters from climate products (AGCD, FLUXNET Shuttle, WorldClim, CRU TS) to the daily drivers `plant` reads. Imports `plant`; `plant` never imports it. Scaffolded 2026-11-09. |
 | `plant-meta` | this repo | Cross-package knowledge + governance (labels, board, playbooks). |
 
 **Docs / visualisation:**
@@ -96,6 +97,7 @@ phylloptim ─────────(LinkingTo, TF24/TF24f leaf physiology)─
   [`.plant-interface-version`](https://github.com/traitecoevo/regnans) (the
   `plant`↔`regnans` interface — fitness/equilibrium machinery — was recently split out of
   `plant`). This is the most active cross-repo interface today.
+- **`fieldtrial`** **Imports**/`Remotes` `plant` (`traitecoevo/plant@develop`), pinned in its own `.plant-interface-version`. It hands `plant` the four `run_scm()` inputs; the dependency never runs the other way.
 - **`logpile`** **Imports**/`Remotes` `plant` (`traitecoevo/plant@develop`) — it caches `plant` runs.
 - **`standviz`** and **`overstorey`** don't link `plant` as a build dependency; `overstorey` renders
   documentation against a pinned `plant` version, `standviz` is a standalone visualiser.
@@ -136,6 +138,7 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
 | Leaf gas exchange, hydraulics and leaf optimality (λ(state), FvCB, the water-supply path) | **phylloptim** | link against it; `plant`'s copy is deleted, not forked |
 | Community assembly / trait evolution machinery (fitness, equilibrium, selection gradients) | **regnans** | call it; it was deliberately moved out of `plant` |
 | Calibrated parameter distributions for `plant` | **phytofile** | consume the inferred parameters |
+| Recommended trait → parameter trade-offs, species × site parameter sets, climate-driver adapters | **fieldtrial** | `plant::default_parameters()` is a frozen TESTING set, loaded explicitly and warning that it is not recommended; do not treat it as a parameterisation of anything |
 | Per-model **scientific version** (`FF16@v1`, `TF24@v2`, …) | **plant** (`scientific_version` constant → `model_version()`/`model_id()`) | read it; don't hand-type versions |
 | The simulation cache format / campaign state | **logpile** | use the pile; don't hand-roll caching |
 | Narrative docs / theory | **overstorey** (API reference: `plant` pkgdown) | link, don't duplicate |
@@ -167,6 +170,7 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
   cache. The residual risk is a maintainer who changes behaviour **without** bumping the version —
   a drift-guard test in `plant` catches default-parameter changes, but pure equation changes rely on
   review. See `governance/release-playbooks.md` §3.
+- **Two copies of the trade-off forms exist by decision.** `fieldtrial` holds the live, recommended trade-offs; `plant` holds a frozen copy inside `default_parameters()` so its goldens stay self-contained. Changing plant's copy means re-blessing goldens; a bit-identity test in `fieldtrial` records when the two diverge. Bare `scm_base_parameters()` attaches NO trade-offs: a trait is written straight to `pars`.
 - **`mulgafutures` is a tracker, not a package.** It coordinates a funded project and has its own
   board + bespoke labels. Don't apply the family label taxonomy to it or treat it as model code.
 - **`floracle` is empty today.** Treat references to it as forward-looking until it has commits.
@@ -186,6 +190,7 @@ The machine-readable version of all of this is in [`dependencies.yml`](dependenc
 - **Changing `plant` simulation semantics** → bump the model's `scientific_version` in `plant` (same
   commit); `logpile` re-derives it and reruns affected campaigns automatically. No bump = silently
   stale caches.
+- **Changing a trade-off or a set in `fieldtrial`** → bump its `.plant-interface-version` if plant moved; re-run the bit-identity test against plant's frozen copy and say in the PR whether they now differ; `logpile` fingerprints change for runs whose `Parameters` carry the new function.
 - **Re-calibrating in `phytofile`** → new parameter distributions; update downstream `plant` runs that
   consume them.
 - **Cutting a new `plant` release** → update version pins/badges in `overstorey`, `regnans`'s
