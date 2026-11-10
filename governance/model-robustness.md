@@ -99,10 +99,35 @@ These are the cases that produced this document (`plant`, 2026-07):
   water flux is not a state the soil can be in, so continuing from it can only produce
   nonsense — this is what the second half of the principle is for
   ([plant #549](https://github.com/traitecoevo/plant/issues/549), fixed).
-- **A spline evaluated outside its domain → decide which side it is on.** If conductivity
-  really is ~0 out there, clamping is a physical statement and the model should continue; if
-  not, it should fail. Either way the error must name the spline, the point, and the domain
-  ([plant #576](https://github.com/traitecoevo/plant/issues/576)).
+- **A spline evaluated outside its domain → check who is asking before deciding whether to
+  clamp.** Posed here as "clamp or widen?", and the answer turned out to be *neither*. The
+  lookup that failed was the inverse transport curve, asked for the stem potential that would
+  carry a **negative** sap flux from a collar at the critical potential — i.e. a potential
+  wetter than saturation, which does not exist. The spline was right to refuse; the caller was
+  wrong to ask, because it was asking in the hydraulic shut-down state, which the feasibility
+  analysis one level up had already rejected. Clamping would have returned a plausible stem
+  potential for an impossible state — the exact failure mode this table's `Never` row warns
+  about — and widening was aimed at the wrong end of the domain anyway.
+
+  Two lessons worth carrying:
+
+  1. **An out-of-domain lookup is often a question that should not have been asked.** Before
+     reaching for the domain, find the caller and check whether the state it is evaluating at
+     is one the model already knows is infeasible.
+  2. **Where a state is handled in two places, check both.** The bug was an asymmetry: one
+     gradient method took the zero-gradient branch in shutdown, its sibling did not. The fix
+     was to make them agree, not to touch the numerics.
+
+  The reporting half of the original entry stands, and paid for itself immediately: naming the
+  spline, the point, the distance outside, the domain and the calling function turned a
+  four-call-site bisect into one read. Two additions from doing it —
+  **name the bracket, not just the point** (a failure inside a solve is usually a property of
+  the interval the caller chose, which is invisible from where it is thrown), and
+  **do not tighten a NaN comparison while you are in there**: `u < lo || u > hi` is false for
+  NaN by design in some callers, so negating it into an in-range test reads like a diagnostic
+  improvement and is really a behaviour change
+  ([plant #576](https://github.com/traitecoevo/plant/issues/576),
+  [#582](https://github.com/traitecoevo/plant/pull/582), fixed).
 
 ## In review
 
@@ -119,6 +144,12 @@ Reasonable questions to ask of a PR that adds or removes a guard:
   that can only be inferred (e.g. "transpiration happens to be 0") is not disclosed, because
   nobody looks.
 - If it fails, does the message name the quantity, the value, and the location?
+- **Is the guard in the right place — is the caller even entitled to ask?** A guard added where a
+  failure *surfaces* can be correct code in the wrong file. Walk one level up: if the state being
+  evaluated was already ruled infeasible there, the fix belongs there (plant #576).
+- **If the same state is handled in more than one place, do they agree?** Two code paths for the
+  same thing that disagree about an edge case is a common shape for these bugs, and it means the
+  edge case is only reachable through one of them (plant #576).
 
 ---
 
