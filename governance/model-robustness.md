@@ -19,7 +19,7 @@ When a model hits an awkward state, ask **"is this state physically attainable?"
 
 | | Attainable | Not attainable |
 |---|---|---|
-| **Examples** | zero growth; hydraulic shutdown (no flow, zero transpiration); net production negative; no recruitment; a cohort that never establishes; light fully attenuated | negative mass or leaf area; non-finite ψ, rate, or density; soil water potential above zero (a negative suction, where a model stores ψ as a suction, as TF24 does); negative transpiration; water balance not conserved; density outside [0, ∞); a probability outside [0, 1] |
+| **Examples** | zero growth; hydraulic shutdown (no flow, zero transpiration); net production negative; no recruitment; a cohort that never establishes; light fully attenuated | negative mass or leaf area; non-finite ψ, rate, or density; soil water potential above zero (a negative suction, where a model stores ψ as a suction, as TF24 does); negative transpiration, in a model that assumes E ≥ 0; water balance not conserved; density outside [0, ∞); a probability outside [0, 1] |
 | **Do** | **represent it.** Return the value the state implies (usually a zero), and make it observable in the outputs | **fail**, naming the quantity, its value, and the constraint it violated |
 | **Never** | throw, so that a whole run dies because one plant is in a legitimate state | silently clamp, substitute a fallback, or continue — this is the failure mode that costs the most time |
 
