@@ -188,9 +188,16 @@ docs_and_viz:
   plantpress:
     repo: traitecoevo/plantpress     # was traitecoevo/standViz until 2026-11-16
     kind: r-package
-    role: Figures of plant runs (3D stand viewer, 2D figures, stand reports), for FF16, TF24 and K93
+    role: Figures of plant runs. Today a three.js 3D stand viewer of FF16 runs; planned (its PLAN.md) are 2D figures and stand reports for FF16, TF24 and K93, taking over plant's plotting functions
     default_branch: master
-    relation: Imports plant, pinned to a develop commit in Remotes and .plant-interface-version; plant's plotting functions move here (plantpress PLAN.md)
+    r_imports: [jsonlite, plant, stats]
+    r_linkingto: []
+    r_depends:
+      - package: plant
+        via: "Remotes traitecoevo/plant@<develop sha>, recorded in .plant-interface-version"
+    data_consumes:
+      - from: plant
+        artifacts: [plant simulation runs]
 
 # Applications / research projects (board #5 scope; governance handling varies — see AGENTS.md).
 applications:
@@ -228,7 +235,7 @@ cross_boundary_artifacts:
     nature: authored (records the compatible plant ref + applied breaking-change migrations)
   - artifact: plant simulation runs
     producer: plant
-    consumer: logpile (cache), regnans (assembly), floracle (forecasts)
+    consumer: logpile (cache), regnans (assembly), floracle (forecasts), plantpress (figures)
     nature: generated (deterministic given inputs; cached by SHA-256 hash)
   - artifact: header-only ODE solver
     producer: odelia

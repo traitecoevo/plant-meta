@@ -43,7 +43,7 @@ applies it to a research project.
 | Repo | Kind | Role |
 |------|------|------|
 | `overstorey` | Quarto site | The **narrative documentation** for `plant` (guides, theory, a version-pinned notebook). The API reference stays on `plant`'s pkgdown site. |
-| `plantpress` | R package | **Figures of `plant` runs**: a three.js 3D stand viewer, 2D figures and stand reports, for FF16, TF24 and K93. Takes over `plant`'s plotting functions. Renamed from `standViz` on 2026-11-16. |
+| `plantpress` | R package | **Figures of `plant` runs.** Today a three.js 3D stand viewer of FF16 runs; its `PLAN.md` adds 2D figures and stand reports for FF16, TF24 and K93, taking over `plant`'s plotting functions. Renamed from `standViz` on 2026-11-16. |
 
 **Applications / research projects** (in board #5 scope, outside the model core):
 
@@ -103,8 +103,8 @@ phylloptim ─────────(LinkingTo, TF24/TF24f leaf physiology)─
   says what has landed.
 - **`logpile`** **Imports**/`Remotes` `plant` (`traitecoevo/plant@develop`) — it caches `plant` runs.
 - **`plantpress`** **Imports**/`Remotes` `plant`, pinned to a `develop` commit and recorded in its
-  `.plant-interface-version`. It reads `plant`'s outputs and functions and re-derives nothing; `plant`
-  never depends on it.
+  `.plant-interface-version`. Its rule is to read what `plant` computes rather than re-derive it
+  (it still copies the crown profile until its restructure); `plant` never depends on it.
 - **`overstorey`** doesn't link `plant` as a build dependency; it renders documentation against a
   pinned `plant` version.
 
