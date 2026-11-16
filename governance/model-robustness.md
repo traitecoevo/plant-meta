@@ -19,7 +19,7 @@ When a model hits an awkward state, ask **"is this state physically attainable?"
 
 | | Attainable | Not attainable |
 |---|---|---|
-| **Examples** | zero growth; hydraulic shutdown (no flow, zero transpiration); net production negative; no recruitment; a cohort that never establishes; light fully attenuated | negative mass or leaf area; non-finite ψ, rate, or density; water balance not conserved; density outside [0, ∞); a probability outside [0, 1] |
+| **Examples** | zero growth; hydraulic shutdown (no flow, zero transpiration); net production negative; no recruitment; a cohort that never establishes; light fully attenuated | negative mass or leaf area; non-finite ψ, rate, or density; soil water potential above zero (a negative suction, where a model stores ψ as a suction, as TF24 does); negative transpiration, in a model that assumes E ≥ 0; water balance not conserved; density outside [0, ∞); a probability outside [0, 1] |
 | **Do** | **represent it.** Return the value the state implies (usually a zero), and make it observable in the outputs | **fail**, naming the quantity, its value, and the constraint it violated |
 | **Never** | throw, so that a whole run dies because one plant is in a legitimate state | silently clamp, substitute a fallback, or continue — this is the failure mode that costs the most time |
 
@@ -53,6 +53,57 @@ can grow" is a sensible biological output rather than a special case.
 Worth knowing when reading such a branch: `if (g > 0) ... else 0` can look like a guard bolted
 on to dodge a division, when it is the limit of a form deliberately built to have one. Check
 before "fixing" it.
+
+## A ladder of remedies
+
+When a system is hard to integrate or a state can leave its domain, try these in order, and go down a rung only when the one above cannot do the job.
+
+0. **Design out stiffness.** Choose the coupling structure and the pointwise nonlinearity so that the system is tractable to integrate. These are separate axes, and a change must say which one it addresses. `plant`'s TF24 soil is the worked case. Drainage from a layer depends on that layer's moisture alone (free drainage: Darcy's law with the matric gradient dropped), which removes the upward coupling between layers: the soil Jacobian is lower-bidiagonal rather than tridiagonal. It leaves the pointwise nonlinearity, a conductivity with an exponent of about 16 in moisture, which no decoupling reaches. This rung can change the physics: decoupled layers are no longer Richards' equation and carry no upward capillary flux. Record such a trade in the model's documentation, not only in a code comment, because a reader comparing against the literature will otherwise assume the standard form. (TF24 records it only in a code comment so far; [plant #796](https://github.com/traitecoevo/plant/issues/796) tracks that.)
+1. **Make the bound follow from the functional form.** Factor a signed net rate into non-negative fluxes, each with its own smooth limiter, instead of gating the net rate behind a test. The bound is then a property of the exact flow. A finite step can still overshoot it, so rung 3 backs this rung up rather than being replaced by it. The worked case is TF24's storage pool, split into a charge and a drain whose difference is exactly the old net flux, and declared non-negative for the solver as well ([plant #609](https://github.com/traitecoevo/plant/issues/609)).
+2. **Make the bound follow from the basis.** Integrate a transformed state with the right support, such as `log S` or `S = w²`, and recover the quantity through the link. There are two caveats. A transform only enforces a bound that the exact vector field already respects: if the flow itself leaves the domain, the transform turns a bound violation into a blow-up or a stall, so rung 1 comes first. And it is not neutral for the solver: an absolute tolerance on `log S` is a relative tolerance on `S`.
+3. **Let the solver reject the step.** An odelia system can declare which states are valid, and a step that ends outside them is rejected and retried with a smaller step ([odelia #55](https://github.com/traitecoevo/odelia/issues/55)). In `plant`, a model lists its non-negative states in `non_negative_states()`, and `Patch::ode_state_valid()` also refuses a non-finite environment state. Write such a predicate as "is the state inside the domain", never as "is it outside": `NaN < 0.0` is false, so the second form lets a NaN through (the plant #549 case below). And check the state itself, not a quantity derived from it: TF24's soil water potential is computed from the moisture state, so its bound is a bound on moisture.
+4. **Fail loudly**, for the physically impossible only, as in the table above.
+
+The ladder exists so that rung 4 is rarely needed; it does not replace it. Failing loudly stays better than clamping quietly.
+
+## Smooth, not stepped
+
+Prefer smooth responses to stepped ones. This is a modelling concern before it is a numerical one. A broken-stick response claims that something changes character at exactly one value, which is rarely what anyone means. The smooth version is easier to defend, kinder to the step-size controller, and differentiable, which matters because a kink in a rate propagates into every derivative taken through it.
+
+| Class | Looks like | Verdict |
+|---|---|---|
+| Discontinuous | step functions, thresholds, an `if` returning different values on either side | **Never** |
+| C⁰, kinked | `min`, `max`, `abs`, broken sticks, clamps | **Avoid.** The derivative jumps, which breaks derivatives and misleads the step-size controller |
+| C¹ | value and first derivative continuous | **The working minimum** |
+| C∞ | all derivatives continuous | **The target**, where it costs nothing |
+
+"No branches" is too strong. The rule is **no branch that is not the continuous extension of the form around it**, as with the density boundary condition above. A rung-3 validity predicate is not a problem either: it chooses which step is taken rather than contributing to a value.
+
+The usual substitutions:
+
+| Instead of | Use | In `plant` |
+|---|---|---|
+| `max(x, 0)` | softplus, `0.5·(x + sqrt(x² + ε²))` | TF24's positive part of net production, `Ppos` |
+| a threshold at `a` | logistic, `1 / (1 + exp(-(x − a) / w))` | TF24's storage gate, `G` |
+| `min(x, x_max)` or a hard cap | `x_max·tanh(x / x_max)`, or `x·x_max / (x + x_max)` | — |
+| `abs(x)` | `sqrt(x² + ε²)` | — |
+
+**Every surrogate brings a width (`ε`, `w`, `k`), and the width must scale with the quantity it smooths, never be an absolute constant.** States in these models span orders of magnitude, so a fixed width is a step function at one end of the range and noise at the other. TF24's `storage_prod_eps = 1e-4` kg/yr is the live case: an absolute constant against fluxes that span six orders of magnitude, and larger than a seedling's whole storage pool ([plant #609](https://github.com/traitecoevo/plant/issues/609), [#620](https://github.com/traitecoevo/plant/issues/620)). For the same reason, smoothness has to hold across the whole parameter range being explored, not only near the defaults.
+
+## At the edge of viability
+
+When a quantity vanishes at the edge of viability, and something downstream divides by a quantity that vanishes with it, **the numerator must vanish to a strictly higher order.** Matching orders leave a finite non-zero limit, and a lower order diverges. The density boundary condition above is the worked case: establishment is quadratic in net production, growth only linear. Establishment probability's `else 0` branch is C¹ but not C², since its value and first derivative tend to zero from above and its second derivative does not. That is the right target. (The density itself is only C⁰ there, with a kink, because it is linear in net production.)
+
+Flattening harder is not better. `exp(-1/P)` is C∞, with every derivative vanishing at the edge, and it is numerically awful, which puts it at odds with rung 0. Prefer raising the polynomial order to flattening exponentially: quadratic over linear is the cheapest thing that works.
+
+## Any strategy, any environment
+
+Any strategy should run in any environment, however ill-suited, and return low growth and low fitness rather than an error. Reading code finds clamps and branches. A wide sweep of parameters and environments is what finds, systematically, where a model quietly stops making sense with neither present, as with a badly scaled width such as `storage_prod_eps`. Before a sweep can test anything, "behaves reasonably" needs an operational definition. The candidates are:
+
+- the run finishes without error;
+- growth and fitness are finite and non-negative;
+- fitness moves in the expected direction along the obvious gradients;
+- no state leaves its domain.
 
 ## What "fail" has to look like
 
@@ -119,8 +170,12 @@ Reasonable questions to ask of a PR that adds or removes a guard:
   that can only be inferred (e.g. "transpiration happens to be 0") is not disclosed, because
   nobody looks.
 - If it fails, does the message name the quantity, the value, and the location?
+- Is this bound enforced by the form, the basis, the solver, or a clamp?
+- Does this rate stay at least C¹ across the whole parameter range, and does every smoothing width scale with the quantity it smooths?
 
 ---
+
+**Extended 2026-11-16** with the ladder, smoothness, edge-of-viability and parameter-sweep criteria from [plant #610](https://github.com/traitecoevo/plant/issues/610).
 
 **Added 2026-07-29**, from the review discussion on
 [plant #570](https://github.com/traitecoevo/plant/pull/570) — "worried about whether we
