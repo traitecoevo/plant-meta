@@ -42,7 +42,7 @@ Add cross-package signals whenever work spans repos:
 - All work goes through a **feature branch + PR**; never commit to a repo's default branch.
 - Default branches vary across the family — confirm before branching:
   `plant` → `develop`, `odelia` → `master`, `regnans` → `master`, `fieldtrial` → `main`, `logpile` → `main`,
-  `phytofile` → `master`, `overstorey` → `master`, `standviz` → `master`, `plant-meta` → `main`,
+  `phytofile` → `master`, `overstorey` → `master`, `plantpress` → `master`, `plant-meta` → `main`,
   `phylloptim` → `master`.
 - **The PR title and body are the commit message** — every repo squash-merges, so they land in
   permanent history verbatim. Keep the subject ≤72 characters including the ` (#NNN)` GitHub
@@ -77,7 +77,7 @@ a failure message has to contain, and the questions to ask in review are in
 
 **Decided 2026-06-28 — governance covers the model-core, docs, and viz repos plus `floracle`.** The
 label taxonomy applies to: model core (`plant`, `odelia`, `regnans`, `fieldtrial`, `logpile`,
-`phytofile`, `plant-meta`), docs/viz (`overstorey`, `standviz`), and `floracle`. Each is listed explicitly in
+`phytofile`, `plant-meta`), docs/viz (`overstorey`, `plantpress`), and `floracle`. Each is listed explicitly in
 `apply-labels.sh`. Still family-scoped — never org-wide.
 
 **`mulgafutures` is excluded.** It is a project-delivery tracker with its **own board** and a

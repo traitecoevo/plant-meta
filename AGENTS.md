@@ -43,7 +43,7 @@ applies it to a research project.
 | Repo | Kind | Role |
 |------|------|------|
 | `overstorey` | Quarto site | The **narrative documentation** for `plant` (guides, theory, a version-pinned notebook). The API reference stays on `plant`'s pkgdown site. |
-| `standviz` (pkg `trees3D`) | R package | **3D visualisation** of individual trees / stands via `rgl` (openGL). Standalone and largely dormant (circa 2016). |
+| `plantpress` | R package | **Figures of `plant` runs.** Today a three.js 3D stand viewer of FF16 runs; its `PLAN.md` adds 2D figures and stand reports for FF16, TF24 and K93, taking over `plant`'s plotting functions. Renamed from `standViz` on 2026-11-16. |
 
 **Applications / research projects** (in board #5 scope, outside the model core):
 
@@ -102,8 +102,11 @@ phylloptim ─────────(LinkingTo, TF24/TF24f leaf physiology)─
   Control, Events); the dependency never runs the other way. Scaffolded 2026-11-09; its `PLAN.md`
   says what has landed.
 - **`logpile`** **Imports**/`Remotes` `plant` (`traitecoevo/plant@develop`) — it caches `plant` runs.
-- **`standviz`** and **`overstorey`** don't link `plant` as a build dependency; `overstorey` renders
-  documentation against a pinned `plant` version, `standviz` is a standalone visualiser.
+- **`plantpress`** **Imports**/`Remotes` `plant`, pinned to a `develop` commit and recorded in its
+  `.plant-interface-version`. Its rule is to read what `plant` computes rather than re-derive it
+  (it still copies the crown profile until its restructure); `plant` never depends on it.
+- **`overstorey`** doesn't link `plant` as a build dependency; it renders documentation against a
+  pinned `plant` version.
 
 ### Workflow / data flow (how a calibrated model gets produced and used)
 
@@ -116,7 +119,7 @@ phylloptim ─────────(LinkingTo, TF24/TF24f leaf physiology)─
                                     ▲                                                   │
                                     │                                                   │ simulations
    plant runs cached by logpile ◄──┘                                                    ▼
-                                                          regnans · floracle · standviz · overstorey
+                                                          regnans · floracle · plantpress · overstorey
                                                           (assembly/evolution · forecasts · viz · docs)
 ```
 
@@ -128,7 +131,7 @@ phylloptim ─────────(LinkingTo, TF24/TF24f leaf physiology)─
 3. **`logpile`** caches the expensive, deterministic `plant` simulations that calibration and
    assembly campaigns repeatedly need (content-addressed by input hash, fault-tolerant, resumable).
 4. **`plant`** (optionally via **`regnans`**) produces ecological/evolutionary predictions.
-5. Those feed **`floracle`** (forecasting), **`standviz`** (3D visualisation), and are documented in
+5. Those feed **`floracle`** (forecasting), **`plantpress`** (figures), and are documented in
    **`overstorey`**.
 6. The **mulga project** (`mulgafutures` WP3) applies this stack to mulga, with `mulga_plots_data`
    supplying the field observations.

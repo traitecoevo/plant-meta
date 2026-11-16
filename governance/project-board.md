@@ -6,7 +6,7 @@ Documents the **structure and conventions** of the family board, not its live ca
 - **Owner:** `traitecoevo` org
 - **Scope:** development across the plant modelling stack — the `plant` model and the packages that
   build on it (`odelia`, `regnans`, `fieldtrial`, `logpile`, `phytofile`), its docs/viz (`overstorey`,
-  `standviz`), and applications (`floracle`). The mulga project (`mulgafutures`) tracks its
+  `plantpress`), and applications (`floracle`). The mulga project (`mulgafutures`) tracks its
   deliverables on its **own** board and is not managed here.
 
 This is the **single, family-scoped board**. Because it covers exactly one family, labels stay

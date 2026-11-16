@@ -35,7 +35,7 @@ FAMILY_REPOS=(
   traitecoevo/plant-meta
   # docs / visualisation
   traitecoevo/overstorey
-  traitecoevo/standviz
+  traitecoevo/plantpress
   # applications
   traitecoevo/floracle
 )
