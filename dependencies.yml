@@ -185,12 +185,12 @@ docs_and_viz:
     role: Narrative documentation for plant (guides, theory, version-pinned notebook)
     default_branch: master
     relation: renders against a pinned plant version; API reference stays on plant's pkgdown site
-  standviz:
-    repo: traitecoevo/standviz
-    kind: r-package                  # package name: trees3D
-    role: 3D visualisation of individual trees / stands via rgl (openGL)
+  plantpress:
+    repo: traitecoevo/plantpress     # was traitecoevo/standViz until 2026-11-16
+    kind: r-package
+    role: Figures of plant runs (3D stand viewer, 2D figures, stand reports), for FF16, TF24 and K93
     default_branch: master
-    relation: standalone; can visualise plant output; largely dormant (circa 2016)
+    relation: Imports plant, pinned to a develop commit in Remotes and .plant-interface-version; plant's plotting functions move here (plantpress PLAN.md)
 
 # Applications / research projects (board #5 scope; governance handling varies — see AGENTS.md).
 applications:
