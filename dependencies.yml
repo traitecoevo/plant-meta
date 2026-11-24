@@ -152,7 +152,7 @@ packages:
       - from: AGCD, FLUXNET Shuttle, WorldClim, CRU TS (external climate products)
         artifacts: [gridded and flux-tower climate]
         via: adapters that write the canonical met table; raw grids never enter the repo
-      - from: phytofile, mulga-library, literature
+      - from: phytofile, library-mulga, literature
         artifacts: [trait and parameter values with citations]
         via: parameter set files
     produces:
